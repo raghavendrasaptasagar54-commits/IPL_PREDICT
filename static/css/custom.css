@@ -1,0 +1,98 @@
+/* IPL Predictor Custom Styles & Animations */
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #0B0F19;
+}
+::-webkit-scrollbar-thumb {
+    background: #1F293D;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #374151;
+}
+
+/* Tab button styles */
+.tab-btn {
+    color: #94A3B8;
+}
+.tab-btn:hover {
+    color: #F8FAFC;
+}
+.tab-btn.active {
+    background: linear-gradient(135deg, #1E293B, #0F172A);
+    color: #F59E0B;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Ball badge tags */
+.ball-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: monospace;
+    flex-shrink: 0;
+}
+.ball-dot {
+    background-color: #1E293B;
+    color: #94A3B8;
+    border: 1px solid #334155;
+}
+.ball-single {
+    background-color: #0F2D37;
+    color: #38BDF8;
+    border: 1px solid #0284C7;
+}
+.ball-four {
+    background-color: #064E3B;
+    color: #34D399;
+    border: 1px solid #059669;
+}
+.ball-six {
+    background-color: #451A03;
+    color: #FBBF24;
+    border: 1px solid #D97706;
+}
+.ball-wicket {
+    background-color: #4C0519;
+    color: #FB7185;
+    border: 1px solid #E11D48;
+    animation: pulse 1s infinite;
+}
+
+/* Custom Range Slider styling */
+input[type=range] {
+    height: 6px;
+    border-radius: 4px;
+    background: #1F293D;
+}
+input[type=range]::-webkit-slider-thumb {
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+@keyframes pulse-slow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+.glow-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glow-card:hover {
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 8px 30px rgba(245, 158, 11, 0.08);
+}
+

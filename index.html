@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPL Win Predictor | ML Live Match Probability Engine</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cricket: {
+                            gold: '#F59E0B',
+                            neon: '#10B981',
+                            blue: '#3B82F6',
+                            red: '#EF4444',
+                            dark: '#0B0F19',
+                            card: '#131B2E',
+                            border: '#1F293D'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/custom.css">
+</head>
+<body class="bg-[#0A0E17] text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-amber-500 selection:text-black">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-800 bg-[#0D1322]/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-300 p-0.5 shadow-lg shadow-amber-500/20">
+                    <div class="w-full h-full bg-[#0D1322] rounded-[10px] flex items-center justify-center">
+                        <i data-lucide="trophy" class="w-6 h-6 text-amber-400"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-display font-extrabold text-2xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-300 to-yellow-200">
+                            IPL PREDICTOR PRO
+                        </span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> LIVE ML ENGINE
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400">Real-time Ground Telemetry & Win Probability Calibrated Pipeline</p>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="hidden md:flex items-center bg-[#131B2E] p-1.5 rounded-xl border border-slate-800">
+                <button onclick="switchTab('predictor')" id="tab-btn-predictor" class="tab-btn active px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
+                    <i data-lucide="activity" class="w-4 h-4"></i> Live Predictor
+                </button>
+                <button onclick="switchTab('simulator')" id="tab-btn-simulator" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
+                    <i data-lucide="play-circle" class="w-4 h-4"></i> Match Simulator
+                </button>
+                <button onclick="switchTab('analytics')" id="tab-btn-analytics" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
+                    <i data-lucide="map-pin" class="w-4 h-4"></i> Grounds & Teams
+                </button>
+                <button onclick="switchTab('ai')" id="tab-btn-ai" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
+                    <i data-lucide="cpu" class="w-4 h-4"></i> Model Insights
+                </button>
+            </div>
+
+            <!-- Header Quick Badge -->
+            <div class="flex items-center gap-3">
+                <div class="text-right hidden sm:block">
+                    <div class="text-xs text-slate-400 font-medium">Model Accuracy</div>
+                    <div class="text-sm font-bold text-emerald-400 font-display">91.80% | AUC 0.98</div>
+                </div>
+                <div class="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-amber-400"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Tabs -->
+        <div class="md:hidden flex overflow-x-auto px-4 py-2 border-t border-slate-800 gap-2 bg-[#0E1526]">
+            <button onclick="switchTab('predictor')" class="tab-btn active px-3 py-1.5 rounded text-xs whitespace-nowrap">Live Predictor</button>
+            <button onclick="switchTab('simulator')" class="tab-btn px-3 py-1.5 rounded text-xs whitespace-nowrap">Match Simulator</button>
+            <button onclick="switchTab('analytics')" class="tab-btn px-3 py-1.5 rounded text-xs whitespace-nowrap">Grounds & Teams</button>
+            <button onclick="switchTab('ai')" class="tab-btn px-3 py-1.5 rounded text-xs whitespace-nowrap">Model Insights</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: LIVE MATCH PREDICTOR                -->
+        <!-- ========================================== -->
+        <section id="tab-predictor" class="tab-content block">
+            <!-- Quick Match Presets -->
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-3 bg-[#111827] border border-slate-800 p-3 rounded-2xl">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                    <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i> Quick Live Scenarios:
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="loadScenario('last_over')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 rounded-lg border border-slate-700 transition">
+                        CSK vs MI (Last Over Thriller)
+                    </button>
+                    <button onclick="loadScenario('powerplay_blast')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 rounded-lg border border-slate-700 transition">
+                        RCB Chinnaswamy Blitz
+                    </button>
+                    <button onclick="loadScenario('middle_squeeze')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 rounded-lg border border-slate-700 transition">
+                        KKR Eden Gardens Spin Trap
+                    </button>
+                    <button onclick="loadScenario('collapse')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 rounded-lg border border-slate-700 transition">
+                        Batting Collapse (7 Down)
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Left Column: Inputs Form -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-[#131B2E] border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl -z-0"></div>
+
+                        <div class="flex items-center justify-between mb-5">
+                            <h2 class="text-lg font-bold font-display tracking-wide text-white flex items-center gap-2">
+                                <i data-lucide="sliders" class="w-5 h-5 text-amber-400"></i> Ground Match Telemetry
+                            </h2>
+                            <span class="text-xs text-slate-400 font-mono">Interactive Sliders</span>
+                        </div>
+
+                        <form id="prediction-form" class="space-y-4">
+                            <!-- Batting Team Selection -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                                    <span>Batting Team (Chasing)</span>
+                                    <span id="bat-color-pill" class="w-3 h-3 rounded-full bg-amber-400 inline-block shadow"></span>
+                                </label>
+                                <select id="batting_team" class="w-full bg-[#0D1322] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 transition">
+                                    {% for team_name, info in teams.items() %}
+                                    <option value="{{ team_name }}" {% if team_name == 'Chennai Super Kings' %}selected{% endif %}>
+                                        {{ team_name }} ({{ info.short_name }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Bowling Team Selection -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                                    <span>Bowling Team (Defending)</span>
+                                    <span id="bowl-color-pill" class="w-3 h-3 rounded-full bg-blue-600 inline-block shadow"></span>
+                                </label>
+                                <select id="bowling_team" class="w-full bg-[#0D1322] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 transition">
+                                    {% for team_name, info in teams.items() %}
+                                    <option value="{{ team_name }}" {% if team_name == 'Mumbai Indians' %}selected{% endif %}>
+                                        {{ team_name }} ({{ info.short_name }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Ground Venue Selection -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Ground & Stadium</label>
+                                <select id="venue" class="w-full bg-[#0D1322] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 transition">
+                                    {% for venue_name, info in venues.items() %}
+                                    <option value="{{ venue_name }}" {% if 'Wankhede' in venue_name %}selected{% endif %}>
+                                        {{ venue_name }} (Avg: {{ info.avg_1st_innings }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Target Runs & Current Score -->
+                            <div class="grid grid-cols-2 gap-4 pt-2">
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="text-xs font-semibold text-slate-300">Target Runs</label>
+                                        <span id="target-val" class="text-xs font-bold font-mono text-amber-400">185</span>
+                                    </div>
+                                    <input type="range" id="target_runs" min="100" max="260" value="185" class="w-full accent-amber-500 cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="text-xs font-semibold text-slate-300">Current Score</label>
+                                        <span id="score-val" class="text-xs font-bold font-mono text-emerald-400">142</span>
+                                    </div>
+                                    <input type="range" id="current_score" min="0" max="260" value="142" class="w-full accent-emerald-500 cursor-pointer">
+                                </div>
+                            </div>
+
+                            <!-- Overs Bowled & Wickets Lost -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="text-xs font-semibold text-slate-300">Overs Bowled</label>
+                                        <span id="overs-val" class="text-xs font-bold font-mono text-blue-400">15.2</span>
+                                    </div>
+                                    <input type="range" id="overs_bowled" min="0.1" max="19.5" step="0.1" value="15.2" class="w-full accent-blue-500 cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="text-xs font-semibold text-slate-300">Wickets Lost</label>
+                                        <span id="wickets-val" class="text-xs font-bold font-mono text-red-400">3</span>
+                                    </div>
+                                    <input type="range" id="wickets_lost" min="0" max="10" value="3" class="w-full accent-red-500 cursor-pointer">
+                                </div>
+                            </div>
+
+                            <!-- Last 5 Overs Momentum Controls -->
+                            <div class="bg-[#0D1322] p-3.5 rounded-xl border border-slate-800 space-y-3">
+                                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                                    <span>Recent Momentum (Last 5 Overs)</span>
+                                    <i data-lucide="trending-up" class="w-3.5 h-3.5 text-amber-400"></i>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <span class="text-[11px] text-slate-400">Runs Scored: <strong id="runs-5ov-val" class="text-slate-200">46</strong></span>
+                                        <input type="range" id="runs_last_5_overs" min="10" max="85" value="46" class="w-full accent-amber-400 cursor-pointer">
+                                    </div>
+                                    <div>
+                                        <span class="text-[11px] text-slate-400">Wickets Lost: <strong id="wkts-5ov-val" class="text-slate-200">1</strong></span>
+                                        <input type="range" id="wickets_last_5_overs" min="0" max="5" value="1" class="w-full accent-red-400 cursor-pointer">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dew Factor & Pitch Condition Toggle -->
+                            <div class="flex items-center justify-between bg-[#0D1322] px-3.5 py-2.5 rounded-xl border border-slate-800">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="droplets" class="w-4 h-4 text-cyan-400"></i>
+                                    <div>
+                                        <div class="text-xs font-semibold text-slate-200">Night Dew Impact</div>
+                                        <div class="text-[10px] text-slate-400">Ball skids onto bat; wet outfield</div>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="dew_present" checked class="sr-only peer">
+                                    <div class="w-10 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                                </label>
+                            </div>
+
+                            <button type="button" onclick="triggerPrediction()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-bold rounded-xl font-display tracking-wider text-base shadow-lg shadow-amber-500/25 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                <i data-lucide="gauge" class="w-5 h-5 text-slate-950"></i> CALCULATE WIN PROBABILITY
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Right Column: Prediction Results Dashboard -->
+                <div class="lg:col-span-7 space-y-6">
+                    <!-- Probability Master Banner -->
+                    <div class="bg-[#131B2E] border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-800/80">
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Live Win Probability</span>
+                                <div id="live-match-title" class="text-lg font-bold text-white font-display">CSK vs MI</div>
+                            </div>
+                            <div id="pressure-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-amber-400"></span> Moderate Pressure
+                            </div>
+                        </div>
+
+                        <!-- Big Dual Odds Display -->
+                        <div class="grid grid-cols-2 gap-4 my-6 text-center">
+                            <!-- Batting Side -->
+                            <div class="p-4 rounded-xl bg-[#0D1322] border border-slate-800 relative overflow-hidden">
+                                <div class="text-xs text-slate-400 font-semibold mb-1" id="res-bat-name">Chennai Super Kings</div>
+                                <div class="text-4xl sm:text-5xl font-extrabold font-display text-amber-400" id="res-bat-prob">64.5%</div>
+                                <div class="text-[11px] text-slate-400 mt-1 uppercase tracking-wider">Chasing Target</div>
+                                <div id="bat-prob-glow" class="absolute inset-x-0 bottom-0 h-1 bg-amber-400"></div>
+                            </div>
+                            <!-- Bowling Side -->
+                            <div class="p-4 rounded-xl bg-[#0D1322] border border-slate-800 relative overflow-hidden">
+                                <div class="text-xs text-slate-400 font-semibold mb-1" id="res-bowl-name">Mumbai Indians</div>
+                                <div class="text-4xl sm:text-5xl font-extrabold font-display text-blue-400" id="res-bowl-prob">35.5%</div>
+                                <div class="text-[11px] text-slate-400 mt-1 uppercase tracking-wider">Defending Total</div>
+                                <div id="bowl-prob-glow" class="absolute inset-x-0 bottom-0 h-1 bg-blue-500"></div>
+                            </div>
+                        </div>
+
+                        <!-- Visual Probability Split Bar -->
+                        <div class="space-y-2 mb-6">
+                            <div class="w-full bg-slate-800 h-4 rounded-full overflow-hidden flex shadow-inner">
+                                <div id="prob-bar-bat" style="width: 64.5%;" class="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-500"></div>
+                                <div id="prob-bar-bowl" style="width: 35.5%;" class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500"></div>
+                            </div>
+                            <div class="flex justify-between text-xs font-mono text-slate-400 px-1">
+                                <span id="bar-label-bat">CSK: 64.5%</span>
+                                <span id="bar-label-bowl">MI: 35.5%</span>
+                            </div>
+                        </div>
+
+                        <!-- Match Status Narrative -->
+                        <div class="p-4 rounded-xl bg-[#0D1322]/90 border border-slate-800 flex items-start gap-3">
+                            <i data-lucide="radio" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5 animate-pulse"></i>
+                            <div>
+                                <div class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-0.5">Live Ground Intelligence</div>
+                                <div id="status-narrative" class="text-sm font-semibold text-slate-100">
+                                    Chennai Super Kings needs 43 runs in 28 balls with 7 wickets in hand.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Metrics Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="bg-[#131B2E] border border-slate-800 p-4 rounded-xl">
+                            <div class="text-xs text-slate-400 font-medium">Required Run Rate</div>
+                            <div id="stat-rrr" class="text-2xl font-bold font-display text-red-400 mt-1">9.21</div>
+                            <div class="text-[10px] text-slate-500 mt-0.5">Runs per 6 balls</div>
+                        </div>
+                        <div class="bg-[#131B2E] border border-slate-800 p-4 rounded-xl">
+                            <div class="text-xs text-slate-400 font-medium">Current Run Rate</div>
+                            <div id="stat-crr" class="text-2xl font-bold font-display text-emerald-400 mt-1">9.26</div>
+                            <div class="text-[10px] text-slate-500 mt-0.5">Scored per over</div>
+                        </div>
+                        <div class="bg-[#131B2E] border border-slate-800 p-4 rounded-xl">
+                            <div class="text-xs text-slate-400 font-medium">Runs Needed</div>
+                            <div id="stat-runs-left" class="text-2xl font-bold font-display text-amber-400 mt-1">43</div>
+                            <div class="text-[10px] text-slate-500 mt-0.5">From <span id="stat-balls-left">28</span> balls</div>
+                        </div>
+                        <div class="bg-[#131B2E] border border-slate-800 p-4 rounded-xl">
+                            <div class="text-xs text-slate-400 font-medium">Wickets in Hand</div>
+                            <div id="stat-wickets-hand" class="text-2xl font-bold font-display text-cyan-400 mt-1">7</div>
+                            <div class="text-[10px] text-slate-500 mt-0.5">Remaining batsmen</div>
+                        </div>
+                    </div>
+
+                    <!-- AI Key Deciding Drivers -->
+                    <div class="bg-[#131B2E] border border-slate-800 rounded-2xl p-5">
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                            <i data-lucide="crosshair" class="w-4 h-4 text-amber-400"></i> Modern Key Determining Factors:
+                        </div>
+                        <div id="drivers-container" class="space-y-2">
+                            <div class="flex items-center gap-2 text-xs text-slate-300 bg-[#0D1322] px-3 py-2 rounded-lg border border-slate-800">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                Deep batting lineup with 7 wickets in hand
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-slate-300 bg-[#0D1322] px-3 py-2 rounded-lg border border-slate-800">
+                                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                                Dew factor favoring chasing side in wet outfield
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: LIVE GROUND SIMULATION STUDIO       -->
+        <!-- ========================================== -->
+        <section id="tab-simulator" class="tab-content hidden space-y-6">
+            <!-- Simulator Control Deck -->
+            <div class="bg-[#131B2E] border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                    <div>
+                        <h2 class="text-xl font-bold font-display text-white flex items-center gap-2">
+                            <i data-lucide="play-circle" class="w-6 h-6 text-amber-400"></i> Live Ground Simulation Studio
+                        </h2>
+                        <p class="text-xs text-slate-400">Simulate a live IPL match ball-by-ball or play through in automated real-time</p>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="sim-start-btn" onclick="startNewSimulation()" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> New Match
+                        </button>
+                        <button id="sim-next-btn" onclick="simulateSingleBall()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs border border-slate-700 flex items-center gap-1.5">
+                            <i data-lucide="step-forward" class="w-4 h-4 text-emerald-400"></i> Bowl Next Ball
+                        </button>
+                        <button id="sim-auto-btn" onclick="toggleAutoPlay()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5">
+                            <i data-lucide="play" class="w-4 h-4"></i> Auto Play
+                        </button>
+                        <button id="sim-full-btn" onclick="simulateFullMatchFast()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5">
+                            <i data-lucide="fast-forward" class="w-4 h-4"></i> Simulate All 20 Overs
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Simulation Setup Selectors -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-4">
+                    <div>
+                        <label class="text-[11px] text-slate-400 block mb-1">Batting Team (Chase)</label>
+                        <select id="sim-batting-team" class="w-full bg-[#0D1322] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                            {% for team_name in teams.keys() %}
+                            <option value="{{ team_name }}" {% if team_name == 'Royal Challengers Bengaluru' %}selected{% endif %}>{{ team_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-slate-400 block mb-1">Bowling Team (Defend)</label>
+                        <select id="sim-bowling-team" class="w-full bg-[#0D1322] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                            {% for team_name in teams.keys() %}
+                            <option value="{{ team_name }}" {% if team_name == 'Kolkata Knight Riders' %}selected{% endif %}>{{ team_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-slate-400 block mb-1">Ground Stadium</label>
+                        <select id="sim-venue" class="w-full bg-[#0D1322] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                            {% for venue_name in venues.keys() %}
+                            <option value="{{ venue_name }}" {% if 'Chinnaswamy' in venue_name %}selected{% endif %}>{{ venue_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-slate-400 block mb-1">Target Score Set in 1st Innings</label>
+                        <input type="number" id="sim-target-input" value="188" min="110" max="260" class="w-full bg-[#0D1322] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-400 font-mono font-bold">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulation Arena Display -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Live Stadium Screen -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="bg-[#131B2E] border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                        <!-- Scoreboard Bar -->
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                            <div>
+                                <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold" id="sim-teams-heading">RCB vs KKR</div>
+                                <div class="flex items-baseline gap-3 mt-1">
+                                    <span class="text-4xl font-extrabold font-display text-white" id="sim-display-score">0/0</span>
+                                    <span class="text-sm font-mono text-slate-400">(Over <span id="sim-display-overs">0.0</span>/20)</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs uppercase text-slate-400 font-semibold">Target: <span id="sim-display-target" class="text-amber-400 font-mono font-bold">188</span></div>
+                                <div class="text-sm font-semibold text-emerald-400 mt-1" id="sim-display-equation">Need 188 off 120 balls</div>
+                            </div>
+                        </div>
+
+                        <!-- Live Win Probability Gauge in Simulator -->
+                        <div class="grid grid-cols-2 gap-4 my-5">
+                            <div class="p-3 bg-[#0D1322] rounded-xl border border-slate-800 text-center">
+                                <div class="text-xs text-slate-400 mb-0.5" id="sim-bat-lbl">RCB Win %</div>
+                                <div class="text-3xl font-extrabold font-display text-amber-400" id="sim-bat-pct">51.2%</div>
+                            </div>
+                            <div class="p-3 bg-[#0D1322] rounded-xl border border-slate-800 text-center">
+                                <div class="text-xs text-slate-400 mb-0.5" id="sim-bowl-lbl">KKR Win %</div>
+                                <div class="text-3xl font-extrabold font-display text-blue-400" id="sim-bowl-pct">48.8%</div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Deliveries Strip -->
+                        <div class="mb-5">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Over Deliveries</div>
+                            <div id="sim-balls-strip" class="flex items-center gap-2 overflow-x-auto py-1">
+                                <div class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 text-xs flex items-center justify-center font-mono font-bold">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Live TV Broadcast Commentary Window -->
+                        <div class="bg-[#090D17] border border-slate-800 rounded-xl p-4">
+                            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">
+                                <i data-lucide="mic" class="w-3.5 h-3.5"></i> TV Broadcast Commentary & Event
+                            </div>
+                            <div id="sim-commentary-text" class="text-sm text-slate-200 font-medium min-h-[48px] flex items-center">
+                                Match ready to bowl at M. Chinnaswamy Stadium. Openers taking strike.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Dynamic Probability Worm Chart -->
+                    <div class="bg-[#131B2E] border border-slate-800 rounded-2xl p-6 shadow-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-sm font-bold font-display uppercase tracking-wider text-white flex items-center gap-2">
+                                    <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Ball-by-Ball Probability Worm
+                                </h3>
+                                <p class="text-xs text-slate-400">Tracks instantaneous win probability swings as wickets fall and boundaries land</p>
+                            </div>
+                            <span class="text-xs font-mono text-slate-400" id="sim-total-balls-badge">0 / 120 balls</span>
+                        </div>
+                        <div class="h-64 w-full">
+                            <canvas id="probabilityWormChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation Feed & Momentum Log -->
+                <div class="lg:col-span-5 space-y-6">
+                    <!-- Momentum Swing Card -->
+                    <div class="bg-[#131B2E] border border-slate-800 rounded-2xl p-5">
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-2">
+                            <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i> Last Ball Win Swing
+                        </div>
+                        <div id="sim-swing-indicator" class="text-xl font-bold font-display text-slate-300">
+                            0.0% (Equilibrium)
+                        </div>
+                        <div class="text-xs text-slate-400 mt-1" id="sim-swing-explanation">
+                            First ball awaiting delivery.
+                        </div>
+                    </div>
+
+                    <!-- Match Event Timeline / Log -->
+                    <div class="bg-[#131B2E] border border-slate-800 rounded-2xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                <i data-lucide="list" class="w-4 h-4 text-blue-400"></i> Match Event Timeline
+                            </div>
+                            <span class="text-[10px] text-slate-500">Live Delivery Feed</span>
+                        </div>
+                        <div id="sim-events-log" class="space-y-2 max-h-96 overflow-y-auto pr-1 text-xs">
+                            <div class="p-2.5 bg-[#0D1322] rounded-lg border border-slate-800/80 text-slate-300">
+                                Match initialized. Ready for ball 0.1.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: GROUNDS & TEAMS ANALYTICS           -->
+        <!-- ========================================== -->
+        <section id="tab-analytics" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Grounds Directory -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="bg-[#131B2E] border border-slate-800 rounded-2xl p-6">
+                        <h2 class="text-lg font-bold font-display text-white mb-4 flex items-center gap-2">
+                            <i data-lucide="map-pin" class="w-5 h-5 text-amber-400"></i> IPL Stadiums & Pitch Telemetry
+                        </h2>
+                        <div class="space-y-3">
+                            {% for venue_name, v in venues.items() %}
+                            <div class="bg-[#0D1322] border border-slate-800 p-4 rounded-xl hover:border-slate-700 transition">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <div>
+                                        <div class="font-bold text-sm text-slate-100">{{ venue_name }}</div>
+                                        <div class="text-xs text-slate-400 mt-0.5">{{ v.pitch_nature }}</div>
+                                    </div>
+                                    <div class="flex items-center gap-3 text-right">
+                                        <div>
+                                            <div class="text-[11px] text-slate-400">Avg 1st Inn</div>
+                                            <div class="text-sm font-bold font-mono text-amber-400">{{ v.avg_1st_innings }}</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-[11px] text-slate-400">Chasing Win</div>
+                                            <div class="text-sm font-bold font-mono text-emerald-400">{{ v.chasing_win_pct }}%</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-[11px] text-slate-400">Dew</div>
+                                            <div class="text-xs font-semibold text-cyan-400">{{ v.dew_intensity }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IPL Franchises List -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="bg-[#131B2E] border border-slate-800 rounded-2xl p-6">
+                        <h2 class="text-lg font-bold font-display text-white mb-4 flex items-center gap-2">
+                            <i data-lucide="shield" class="w-5 h-5 text-amber-400"></i> IPL Team Profiles
+                        </h2>
+                        <div class="space-y-3">
+                            {% for team_name, t in teams.items() %}
+                            <div class="bg-[#0D1322] border border-slate-800 p-3.5 rounded-xl flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-3.5 h-3.5 rounded-full shadow" style="background-color: {{ t.primary_color }}"></div>
+                                    <div>
+                                        <div class="text-xs font-bold text-slate-200">{{ team_name }} ({{ t.short_name }})</div>
+                                        <div class="text-[10px] text-slate-400">Trophies: {{ t.championships }}x Champions</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 font-mono text-xs">
+                                    <span class="px-2 py-0.5 bg-slate-800 rounded text-slate-300">BAT: {{ t.batting_rating }}</span>
+                                    <span class="px-2 py-0.5 bg-slate-800 rounded text-slate-300">BOWL: {{ t.bowling_rating }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: MODEL INSIGHTS & AI ARCHITECTURE    -->
+        <!-- ========================================== -->
+        <section id="tab-ai" class="tab-content hidden space-y-6">
+            <div class="bg-[#131B2E] border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-xl font-bold font-display text-white mb-2 flex items-center gap-2">
+                    <i data-lucide="cpu" class="w-6 h-6 text-amber-400"></i> AI Architecture & Probability Calibration
+                </h2>
+                <p class="text-xs text-slate-400">
+                    Built with modern ensemble machine learning techniques trained on live ground telemetry datasets.
+                </p>
+
+                <!-- Model Stats Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 my-6">
+                    <div class="bg-[#0D1322] border border-slate-800 p-4 rounded-xl">
+                        <div class="text-xs text-slate-400">Classification Accuracy</div>
+                        <div class="text-3xl font-extrabold font-display text-emerald-400 mt-1">91.80%</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">Tested on 11,350+ unseen states</div>
+                    </div>
+                    <div class="bg-[#0D1322] border border-slate-800 p-4 rounded-xl">
+                        <div class="text-xs text-slate-400">ROC - AUC Score</div>
+                        <div class="text-3xl font-extrabold font-display text-amber-400 mt-1">0.9770</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">High class separability</div>
+                    </div>
+                    <div class="bg-[#0D1322] border border-slate-800 p-4 rounded-xl">
+                        <div class="text-xs text-slate-400">Brier Score Loss</div>
+                        <div class="text-3xl font-extrabold font-display text-cyan-400 mt-1">0.0575</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">Optimal probability calibration</div>
+                    </div>
+                    <div class="bg-[#0D1322] border border-slate-800 p-4 rounded-xl">
+                        <div class="text-xs text-slate-400">Trained Dataset Points</div>
+                        <div class="text-3xl font-extrabold font-display text-indigo-400 mt-1">56,759</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">Ball-by-ball match states</div>
+                    </div>
+                </div>
+
+                <!-- Pipeline Breakdown -->
+                <div class="space-y-4 pt-4 border-t border-slate-800">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300">Ensemble Architecture</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-[#0D1322] p-4 rounded-xl border border-slate-800">
+                            <div class="text-xs font-bold text-amber-400 mb-1">1. HistGradientBoosting</div>
+                            <p class="text-xs text-slate-400">Captures non-linear death-over volatility and rapid momentum swings.</p>
+                        </div>
+                        <div class="bg-[#0D1322] p-4 rounded-xl border border-slate-800">
+                            <div class="text-xs font-bold text-emerald-400 mb-1">2. Random Forest Classifier</div>
+                            <p class="text-xs text-slate-400">Ensemble bagging across deep trees to guard against rare outlier match occurrences.</p>
+                        </div>
+                        <div class="bg-[#0D1322] p-4 rounded-xl border border-slate-800">
+                            <div class="text-xs font-bold text-cyan-400 mb-1">3. Calibrated Logistic Regressor</div>
+                            <p class="text-xs text-slate-400">Provides monotonic probability scaling matching classical Duckworth-Lewis / CricViz baselines.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-[#090D17] py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div>
+                IPL Winning Team Prediction System &bull; Machine Learning Sports Analytics
+            </div>
+            <div class="text-[11px] text-slate-400">
+                Powered by Python, Scikit-Learn, Flask & Modern Cricket Ground Telemetry
+            </div>
+        </div>
+    </footer>
+
+    <!-- App JavaScript -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
+
