@@ -1,0 +1,38 @@
+{
+    "model_type": "Modern Soft-Voting Ensemble (Random Forest + HistGradientBoosting + Logistic Regression)",
+    "accuracy": 91.8,
+    "roc_auc": 0.977,
+    "brier_score": 0.0575,
+    "log_loss": 0.1923,
+    "train_samples": 45407,
+    "test_samples": 11352,
+    "categorical_features": [
+        "batting_team",
+        "bowling_team",
+        "venue"
+    ],
+    "numerical_features": [
+        "target_runs",
+        "current_score",
+        "balls_left",
+        "wickets_in_hand",
+        "runs_left",
+        "crr",
+        "rrr",
+        "rr_diff",
+        "pressure_index",
+        "runs_last_5_overs",
+        "wickets_last_5_overs",
+        "dew_present",
+        "venue_avg_1st_innings",
+        "venue_chasing_win_pct",
+        "wickets_ratio",
+        "balls_ratio",
+        "target_difficulty",
+        "recent_momentum_swing"
+    ],
+    "classes": [
+        "Bowling Team Win (Target Defended)",
+        "Batting Team Win (Target Chased)"
+    ]
+}
